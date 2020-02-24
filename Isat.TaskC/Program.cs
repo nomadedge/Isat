@@ -92,7 +92,46 @@ namespace Isat.TaskC
             return distance;
         }
 
-        public double CalculateCernel()
+        public double CalculateKernel(double value)
+        {
+            var kernel = 0d;
+            switch (KernelFunctionType)
+            {
+                case KernelFunctionType.Uniform:
+                    kernel = 0.5;
+                    break;
+                case KernelFunctionType.Triangular:
+                    kernel = 1 - Math.Abs(value);
+                    break;
+                case KernelFunctionType.Epanechnikov:
+                    kernel = 0.75 * (1 - Math.Pow(value, 2));
+                    break;
+                case KernelFunctionType.Quartic:
+                    kernel = 15 / 16 * Math.Pow(1 - Math.Pow(value, 2), 2);
+                    break;
+                case KernelFunctionType.Triweight:
+                    kernel = 35 / 32 * Math.Pow(1 - Math.Pow(value, 2), 3);
+                    break;
+                case KernelFunctionType.Tricube:
+                    kernel = 70 / 81 * Math.Pow(1 - Math.Pow(Math.Abs(value), 3), 3);
+                    break;
+                case KernelFunctionType.Gaussian:
+                    kernel = Math.Pow(Math.E, -Math.Pow(value, 2) / 2) / Math.Sqrt(2 * Math.PI);
+                    break;
+                case KernelFunctionType.Cosine:
+                    kernel = Math.PI * Math.Cos(Math.PI * value / 2) / 4;
+                    break;
+                case KernelFunctionType.Logistic:
+                    kernel = 1 / Math.Pow(Math.E, value) + 2 + Math.Pow(Math.E, -value);
+                    break;
+                case KernelFunctionType.Sigmoid:
+                    kernel = 2 / Math.PI / Math.Pow(Math.E, value) + Math.Pow(Math.E, -value);
+                    break;
+                default:
+                    break;
+            }
+            return kernel;
+        }
     }
 
     class Program
