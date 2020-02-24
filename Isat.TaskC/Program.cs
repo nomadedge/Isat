@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Isat.TaskC
 {
@@ -41,6 +42,18 @@ namespace Isat.TaskC
         }
     }
 
+    class Distance
+    {
+        public double Value { get; set; }
+        public int EntityIndex { get; set; }
+
+        public Distance(double value, int entityIndex)
+        {
+            Value = value;
+            EntityIndex = entityIndex;
+        }
+    }
+
     class Solution
     {
         public int EntitiesCount { get; private set; }
@@ -51,7 +64,9 @@ namespace Isat.TaskC
         public DistanceFunctionType DistanceFunctionType { get; set; }
         public KernelFunctionType KernelFunctionType { get; set; }
         public WindowType WindowType { get; set; }
-        public int WindowSize { get; set; }
+        public double WindowWidth { get; set; }
+        public int NeighborsCount { get; set; }
+        public List<Distance> Distances { get; set; }
 
         public Solution(int entitiesCount, int attributesCount)
         {
@@ -59,6 +74,7 @@ namespace Isat.TaskC
             AttributesCount = attributesCount;
             Entities = new List<Entity>(EntitiesCount);
             QueryEntity = new Entity(AttributesCount);
+            Distances = new List<Distance>();
         }
 
         public double CalculateDistance(Entity entity1, Entity entity2)
@@ -98,28 +114,49 @@ namespace Isat.TaskC
             switch (KernelFunctionType)
             {
                 case KernelFunctionType.Uniform:
-                    kernel = 0.5;
+                    if (Math.Abs(value) <= 1)
+                    {
+                        kernel = 0.5;
+                    }
                     break;
                 case KernelFunctionType.Triangular:
-                    kernel = 1 - Math.Abs(value);
+                    if (Math.Abs(value) <= 1)
+                    {
+                        kernel = 1 - Math.Abs(value);
+                    }
                     break;
                 case KernelFunctionType.Epanechnikov:
-                    kernel = 0.75 * (1 - Math.Pow(value, 2));
+                    if (Math.Abs(value) <= 1)
+                    {
+                        kernel = 0.75 * (1 - Math.Pow(value, 2));
+                    }
                     break;
                 case KernelFunctionType.Quartic:
-                    kernel = 15 / 16 * Math.Pow(1 - Math.Pow(value, 2), 2);
+                    if (Math.Abs(value) <= 1)
+                    {
+                        kernel = 15 / 16 * Math.Pow(1 - Math.Pow(value, 2), 2);
+                    }
                     break;
                 case KernelFunctionType.Triweight:
-                    kernel = 35 / 32 * Math.Pow(1 - Math.Pow(value, 2), 3);
+                    if (Math.Abs(value) <= 1)
+                    {
+                        kernel = 35 / 32 * Math.Pow(1 - Math.Pow(value, 2), 3);
+                    }
                     break;
                 case KernelFunctionType.Tricube:
-                    kernel = 70 / 81 * Math.Pow(1 - Math.Pow(Math.Abs(value), 3), 3);
+                    if (Math.Abs(value) <= 1)
+                    {
+                        kernel = 70 / 81 * Math.Pow(1 - Math.Pow(Math.Abs(value), 3), 3);
+                    }
                     break;
                 case KernelFunctionType.Gaussian:
                     kernel = Math.Pow(Math.E, -Math.Pow(value, 2) / 2) / Math.Sqrt(2 * Math.PI);
                     break;
                 case KernelFunctionType.Cosine:
-                    kernel = Math.PI * Math.Cos(Math.PI * value / 2) / 4;
+                    if (Math.Abs(value) <= 1)
+                    {
+                        kernel = Math.PI * Math.Cos(Math.PI * value / 2) / 4;
+                    }
                     break;
                 case KernelFunctionType.Logistic:
                     kernel = 1 / Math.Pow(Math.E, value) + 2 + Math.Pow(Math.E, -value);
@@ -132,13 +169,47 @@ namespace Isat.TaskC
             }
             return kernel;
         }
+
+        public void Solve()
+        {
+            for (int i = 0; i < EntitiesCount; i++)
+            {
+                Distances.Add(new Distance(CalculateDistance(QueryEntity, Entities[i]), i));
+            }
+            Distances = Distances.OrderBy(d => d.Value).ToList();
+
+            switch (WindowType)
+            {
+                case WindowType.Fixed:
+                    for (int i = 0; i < EntitiesCount; i++)
+                    {
+                        if (Distances[i].Value > WindowWidth)
+                        {
+                            NeighborsCount = i;
+                            break;
+                        }
+                    }
+                    break;
+                case WindowType.Variable:
+                    WindowWidth = Distances[NeighborsCount - 1].Value;
+                    break;
+                default:
+                    break;
+            }
+
+            var numerator = 0d;
+            var denominator = 0d;
+            for (int i = 0; i < NeighborsCount; i++)
+            {
+
+            }
+        }
     }
 
     class Program
     {
         static void Main(string[] args)
         {
-            //Initialize everything from input
             var countsStrings = Console.ReadLine().Split(' ');
             var solution = new Solution(int.Parse(countsStrings[0]), int.Parse(countsStrings[1]));
 
@@ -162,7 +233,19 @@ namespace Isat.TaskC
             solution.DistanceFunctionType = Enum.Parse<DistanceFunctionType>(Console.ReadLine(), true);
             solution.KernelFunctionType = Enum.Parse<KernelFunctionType>(Console.ReadLine(), true);
             solution.WindowType = Enum.Parse<WindowType>(Console.ReadLine(), true);
-            solution.WindowSize = int.Parse(Console.ReadLine());
+            switch (solution.WindowType)
+            {
+                case WindowType.Fixed:
+                    solution.WindowWidth = int.Parse(Console.ReadLine());
+                    break;
+                case WindowType.Variable:
+                    solution.NeighborsCount = int.Parse(Console.ReadLine());
+                    break;
+                default:
+                    break;
+            }
+
+
 
             //to do: finish solution
         }
