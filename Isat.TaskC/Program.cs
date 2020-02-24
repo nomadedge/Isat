@@ -183,7 +183,7 @@ namespace Isat.TaskC
                 case WindowType.Fixed:
                     for (int i = 0; i < EntitiesCount; i++)
                     {
-                        if (Distances[i].Value > WindowWidth)
+                        if (Distances[i].Value > WindowWidth || i == EntitiesCount - 1)
                         {
                             NeighborsCount = i;
                             break;
@@ -197,12 +197,36 @@ namespace Isat.TaskC
                     break;
             }
 
+            if (NeighborsCount == 0)
+            {
+                QueryEntityTargetValue = Entities.Average(e => e.TargetValue);
+                return;
+            }
+
+            if (WindowWidth == 0)
+            {
+                var similarEntities = Entities.Where(e => Enumerable.SequenceEqual(e.Attributes, QueryEntity.Attributes));
+                QueryEntityTargetValue = similarEntities.Average(e => e.TargetValue);
+                return;
+            }
+
             var numerator = 0d;
             var denominator = 0d;
             for (int i = 0; i < NeighborsCount; i++)
             {
-
+                var kernel = CalculateKernel(Distances[i].Value / WindowWidth);
+                var targetValue = Entities[Distances[i].EntityIndex].TargetValue;
+                numerator += targetValue * kernel;
+                denominator += kernel;
             }
+
+            if (denominator == 0)
+            {
+                QueryEntityTargetValue = Entities.Average(e => e.TargetValue);
+                return;
+            }
+
+            QueryEntityTargetValue = numerator / denominator;
         }
     }
 
@@ -222,6 +246,7 @@ namespace Isat.TaskC
                     entity.Attributes.Add(int.Parse(entityStrings[j]));
                 }
                 entity.TargetValue = int.Parse(entityStrings[solution.AttributesCount]);
+                solution.Entities.Add(entity);
             }
 
             var queryEntityAttributesStrings = Console.ReadLine().Split(' ');
@@ -245,9 +270,9 @@ namespace Isat.TaskC
                     break;
             }
 
+            solution.Solve();
 
-
-            //to do: finish solution
+            Console.WriteLine(solution.QueryEntityTargetValue);
         }
     }
 }
