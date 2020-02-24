@@ -159,10 +159,10 @@ namespace Isat.TaskC
                     }
                     break;
                 case KernelFunctionType.Logistic:
-                    kernel = 1 / Math.Pow(Math.E, value) + 2 + Math.Pow(Math.E, -value);
+                    kernel = 1 / (Math.Pow(Math.E, value) + 2 + Math.Pow(Math.E, -value));
                     break;
                 case KernelFunctionType.Sigmoid:
-                    kernel = 2 / Math.PI / Math.Pow(Math.E, value) + Math.Pow(Math.E, -value);
+                    kernel = 2 / (Math.PI * (Math.Pow(Math.E, value) + Math.Pow(Math.E, -value)));
                     break;
                 default:
                     break;
@@ -183,15 +183,33 @@ namespace Isat.TaskC
                 case WindowType.Fixed:
                     for (int i = 0; i < EntitiesCount; i++)
                     {
-                        if (Distances[i].Value > WindowWidth || i == EntitiesCount - 1)
+                        if (Distances[i].Value >= WindowWidth)
                         {
                             NeighborsCount = i;
+                            break;
+                        }
+                        if (i == EntitiesCount - 1)
+                        {
+                            NeighborsCount = i + 1;
                             break;
                         }
                     }
                     break;
                 case WindowType.Variable:
                     WindowWidth = Distances[NeighborsCount - 1].Value;
+                    for (int i = NeighborsCount; i < EntitiesCount; i++)
+                    {
+                        if (Distances[i].Value > WindowWidth)
+                        {
+                            NeighborsCount = i;
+                            break;
+                        }
+                        if (i == EntitiesCount - 1)
+                        {
+                            NeighborsCount = i + 1;
+                            break;
+                        }
+                    }
                     break;
                 default:
                     break;
@@ -205,8 +223,15 @@ namespace Isat.TaskC
 
             if (WindowWidth == 0)
             {
-                var similarEntities = Entities.Where(e => Enumerable.SequenceEqual(e.Attributes, QueryEntity.Attributes));
-                QueryEntityTargetValue = similarEntities.Average(e => e.TargetValue);
+                var similarEntities = Entities.Where(e => Enumerable.SequenceEqual(e.Attributes, QueryEntity.Attributes)).ToList();
+                if (similarEntities.Any())
+                {
+                    QueryEntityTargetValue = similarEntities.Average(e => e.TargetValue);
+                }
+                else
+                {
+                    QueryEntityTargetValue = Entities.Average(e => e.TargetValue);
+                }
                 return;
             }
 
@@ -255,9 +280,9 @@ namespace Isat.TaskC
                 solution.QueryEntity.Attributes.Add(int.Parse(queryEntityAttributesStrings[i]));
             }
 
-            solution.DistanceFunctionType = Enum.Parse<DistanceFunctionType>(Console.ReadLine(), true);
-            solution.KernelFunctionType = Enum.Parse<KernelFunctionType>(Console.ReadLine(), true);
-            solution.WindowType = Enum.Parse<WindowType>(Console.ReadLine(), true);
+            solution.DistanceFunctionType = (DistanceFunctionType) Enum.Parse(typeof(DistanceFunctionType), Console.ReadLine(), true);
+            solution.KernelFunctionType = (KernelFunctionType) Enum.Parse(typeof(KernelFunctionType), Console.ReadLine(), true);
+            solution.WindowType = (WindowType) Enum.Parse(typeof(WindowType), Console.ReadLine(), true);
             switch (solution.WindowType)
             {
                 case WindowType.Fixed:
