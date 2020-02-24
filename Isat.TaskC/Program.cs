@@ -114,7 +114,7 @@ namespace Isat.TaskC
             switch (KernelFunctionType)
             {
                 case KernelFunctionType.Uniform:
-                    if (Math.Abs(value) <= 1)
+                    if (Math.Abs(value) < 1)
                     {
                         kernel = 0.5;
                     }
@@ -190,13 +190,13 @@ namespace Isat.TaskC
                         }
                         if (i == EntitiesCount - 1)
                         {
-                            NeighborsCount = i + 1;
+                            NeighborsCount = EntitiesCount;
                             break;
                         }
                     }
                     break;
                 case WindowType.Variable:
-                    WindowWidth = Distances[NeighborsCount - 1].Value;
+                    WindowWidth = Distances[NeighborsCount].Value;
                     for (int i = NeighborsCount; i < EntitiesCount; i++)
                     {
                         if (Distances[i].Value > WindowWidth)
@@ -206,19 +206,13 @@ namespace Isat.TaskC
                         }
                         if (i == EntitiesCount - 1)
                         {
-                            NeighborsCount = i + 1;
+                            NeighborsCount = EntitiesCount;
                             break;
                         }
                     }
                     break;
                 default:
                     break;
-            }
-
-            if (NeighborsCount == 0)
-            {
-                QueryEntityTargetValue = Entities.Average(e => e.TargetValue);
-                return;
             }
 
             if (WindowWidth == 0)
@@ -232,6 +226,12 @@ namespace Isat.TaskC
                 {
                     QueryEntityTargetValue = Entities.Average(e => e.TargetValue);
                 }
+                return;
+            }
+
+            if (NeighborsCount == 0)
+            {
+                QueryEntityTargetValue = Entities.Average(e => e.TargetValue);
                 return;
             }
 
