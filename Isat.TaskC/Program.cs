@@ -150,7 +150,7 @@ namespace Isat.TaskC
                     }
                     break;
                 case KernelFunctionType.Gaussian:
-                    kernel = Math.Pow(Math.E, -Math.Pow(value, 2) / 2) / Math.Sqrt(2 * Math.PI);
+                    kernel = Math.Exp(-Math.Pow(value, 2) / 2) / Math.Sqrt(2 * Math.PI);
                     break;
                 case KernelFunctionType.Cosine:
                     if (Math.Abs(value) <= 1)
@@ -159,10 +159,10 @@ namespace Isat.TaskC
                     }
                     break;
                 case KernelFunctionType.Logistic:
-                    kernel = 1 / (Math.Pow(Math.E, value) + 2 + Math.Pow(Math.E, -value));
+                    kernel = 1 / (Math.Exp(value) + 2 + Math.Exp(-value));
                     break;
                 case KernelFunctionType.Sigmoid:
-                    kernel = 2 / (Math.PI * (Math.Pow(Math.E, value) + Math.Pow(Math.E, -value)));
+                    kernel = 2 / (Math.PI * Math.Exp(value) + Math.Exp(-value));
                     break;
                 default:
                     break;
@@ -196,10 +196,11 @@ namespace Isat.TaskC
                     }
                     break;
                 case WindowType.Variable:
+                    var maxDistance = Distances[NeighborsCount - 1].Value;
                     WindowWidth = Distances[NeighborsCount].Value;
                     for (int i = NeighborsCount; i < EntitiesCount; i++)
                     {
-                        if (Distances[i].Value > WindowWidth)
+                        if (Distances[i].Value > WindowWidth && Distances[i].Value != maxDistance)
                         {
                             NeighborsCount = i;
                             break;
@@ -247,7 +248,15 @@ namespace Isat.TaskC
 
             if (denominator == 0)
             {
-                QueryEntityTargetValue = Entities.Average(e => e.TargetValue);
+                var similarEntities = Entities.Where(e => Enumerable.SequenceEqual(e.Attributes, QueryEntity.Attributes)).ToList();
+                if (similarEntities.Any())
+                {
+                    QueryEntityTargetValue = similarEntities.Average(e => e.TargetValue);
+                }
+                else
+                {
+                    QueryEntityTargetValue = Entities.Average(e => e.TargetValue);
+                }
                 return;
             }
 
