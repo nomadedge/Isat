@@ -120,54 +120,67 @@ namespace Isat.TaskC
                     }
                     break;
                 case KernelFunctionType.Triangular:
-                    if (Math.Abs(value) <= 1)
+                    if (Math.Abs(value) < 1)
                     {
-                        kernel = 1 - Math.Abs(value);
+                        kernel = 1d - Math.Abs(value);
                     }
                     break;
                 case KernelFunctionType.Epanechnikov:
-                    if (Math.Abs(value) <= 1)
+                    if (Math.Abs(value) < 1)
                     {
                         kernel = 0.75 * (1 - Math.Pow(value, 2));
                     }
                     break;
                 case KernelFunctionType.Quartic:
-                    if (Math.Abs(value) <= 1)
+                    if (Math.Abs(value) < 1)
                     {
-                        kernel = 15 / 16 * Math.Pow(1 - Math.Pow(value, 2), 2);
+                        kernel = 15d / 16d * Math.Pow(1 - Math.Pow(value, 2), 2);
                     }
                     break;
                 case KernelFunctionType.Triweight:
-                    if (Math.Abs(value) <= 1)
+                    if (Math.Abs(value) < 1)
                     {
-                        kernel = 35 / 32 * Math.Pow(1 - Math.Pow(value, 2), 3);
+                        kernel = 35d / 32d * Math.Pow(1d - Math.Pow(value, 2d), 3d);
                     }
                     break;
                 case KernelFunctionType.Tricube:
-                    if (Math.Abs(value) <= 1)
+                    if (Math.Abs(value) < 1)
                     {
-                        kernel = 70 / 81 * Math.Pow(1 - Math.Pow(Math.Abs(value), 3), 3);
+                        kernel = 70d / 81d * Math.Pow(1d - Math.Pow(Math.Abs(value), 3d), 3d);
                     }
                     break;
                 case KernelFunctionType.Gaussian:
-                    kernel = Math.Exp(-Math.Pow(value, 2) / 2) / Math.Sqrt(2 * Math.PI);
+                    kernel = Math.Exp(-Math.Pow(value, 2d) / 2d) / Math.Sqrt(2d * Math.PI);
                     break;
                 case KernelFunctionType.Cosine:
-                    if (Math.Abs(value) <= 1)
+                    if (Math.Abs(value) < 1)
                     {
-                        kernel = Math.PI * Math.Cos(Math.PI * value / 2) / 4;
+                        kernel = Math.PI * Math.Cos(Math.PI * value / 2d) / 4d;
                     }
                     break;
                 case KernelFunctionType.Logistic:
-                    kernel = 1 / (Math.Exp(value) + 2 + Math.Exp(-value));
+                    kernel = 1d / (Math.Exp(value) + 2d + Math.Exp(-value));
                     break;
                 case KernelFunctionType.Sigmoid:
-                    kernel = 2 / (Math.PI * Math.Exp(value) + Math.Exp(-value));
+                    kernel = 2d / (Math.PI * (Math.Exp(value) + Math.Exp(-value)));
                     break;
                 default:
                     break;
             }
             return kernel;
+        }
+
+        public double GetAverage()
+        {
+            var similarEntities = Entities.Where(e => Enumerable.SequenceEqual(e.Attributes, QueryEntity.Attributes)).ToList();
+            if (similarEntities.Any())
+            {
+                return similarEntities.Average(e => e.TargetValue);
+            }
+            else
+            {
+                return Entities.Average(e => e.TargetValue);
+            }
         }
 
         public void Solve()
@@ -196,21 +209,7 @@ namespace Isat.TaskC
                     }
                     break;
                 case WindowType.Variable:
-                    var maxDistance = Distances[NeighborsCount - 1].Value;
                     WindowWidth = Distances[NeighborsCount].Value;
-                    for (int i = NeighborsCount; i < EntitiesCount; i++)
-                    {
-                        if (Distances[i].Value > WindowWidth && Distances[i].Value != maxDistance)
-                        {
-                            NeighborsCount = i;
-                            break;
-                        }
-                        if (i == EntitiesCount - 1)
-                        {
-                            NeighborsCount = EntitiesCount;
-                            break;
-                        }
-                    }
                     break;
                 default:
                     break;
@@ -218,27 +217,13 @@ namespace Isat.TaskC
 
             if (WindowWidth == 0)
             {
-                var similarEntities = Entities.Where(e => Enumerable.SequenceEqual(e.Attributes, QueryEntity.Attributes)).ToList();
-                if (similarEntities.Any())
-                {
-                    QueryEntityTargetValue = similarEntities.Average(e => e.TargetValue);
-                }
-                else
-                {
-                    QueryEntityTargetValue = Entities.Average(e => e.TargetValue);
-                }
-                return;
-            }
-
-            if (NeighborsCount == 0)
-            {
-                QueryEntityTargetValue = Entities.Average(e => e.TargetValue);
+                QueryEntityTargetValue = GetAverage();
                 return;
             }
 
             var numerator = 0d;
             var denominator = 0d;
-            for (int i = 0; i < NeighborsCount; i++)
+            for (int i = 0; i < EntitiesCount; i++)
             {
                 var kernel = CalculateKernel(Distances[i].Value / WindowWidth);
                 var targetValue = Entities[Distances[i].EntityIndex].TargetValue;
@@ -248,15 +233,7 @@ namespace Isat.TaskC
 
             if (denominator == 0)
             {
-                var similarEntities = Entities.Where(e => Enumerable.SequenceEqual(e.Attributes, QueryEntity.Attributes)).ToList();
-                if (similarEntities.Any())
-                {
-                    QueryEntityTargetValue = similarEntities.Average(e => e.TargetValue);
-                }
-                else
-                {
-                    QueryEntityTargetValue = Entities.Average(e => e.TargetValue);
-                }
+                QueryEntityTargetValue = GetAverage();
                 return;
             }
 
@@ -295,7 +272,7 @@ namespace Isat.TaskC
             switch (solution.WindowType)
             {
                 case WindowType.Fixed:
-                    solution.WindowWidth = int.Parse(Console.ReadLine());
+                    solution.WindowWidth = double.Parse(Console.ReadLine());
                     break;
                 case WindowType.Variable:
                     solution.NeighborsCount = int.Parse(Console.ReadLine());
