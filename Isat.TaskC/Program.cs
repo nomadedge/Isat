@@ -266,9 +266,9 @@ namespace Isat.TaskC
                 solution.QueryEntity.Attributes.Add(int.Parse(queryEntityAttributesStrings[i]));
             }
 
-            solution.DistanceFunctionType = (DistanceFunctionType) Enum.Parse(typeof(DistanceFunctionType), Console.ReadLine(), true);
-            solution.KernelFunctionType = (KernelFunctionType) Enum.Parse(typeof(KernelFunctionType), Console.ReadLine(), true);
-            solution.WindowType = (WindowType) Enum.Parse(typeof(WindowType), Console.ReadLine(), true);
+            solution.DistanceFunctionType = (DistanceFunctionType)Enum.Parse(typeof(DistanceFunctionType), Console.ReadLine(), true);
+            solution.KernelFunctionType = (KernelFunctionType)Enum.Parse(typeof(KernelFunctionType), Console.ReadLine(), true);
+            solution.WindowType = (WindowType)Enum.Parse(typeof(WindowType), Console.ReadLine(), true);
             switch (solution.WindowType)
             {
                 case WindowType.Fixed:
