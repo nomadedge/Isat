@@ -132,7 +132,7 @@ namespace Isat.Lab1.Services
 
                 if (parameters.WindowWidth == 0)
                 {
-                    for (int k = 0; k < parameters.Entities.Count; k++)
+                    for (int k = 0; k < classesCount; k++)
                     {
                         queryEntityClasses.Add(GetAverageOneHot(parameters, i, k));
                     }
@@ -146,8 +146,8 @@ namespace Isat.Lab1.Services
                         for (int k = 0; k < parameters.Entities.Count; k++)
                         {
                             var kernel = CalculateKernel(
-                            parameters.DistancesForEachElement[i][j].Value / parameters.WindowWidth, parameters.KernelFunctionType);
-                            var classNumber = parameters.Entities[parameters.DistancesForEachElement[i][j].EntityIndex].ClassNumber;
+                            parameters.DistancesForEachElement[i][k].Value / parameters.WindowWidth, parameters.KernelFunctionType);
+                            var classNumber = parameters.Entities[parameters.DistancesForEachElement[i][k].EntityIndex].ClassNumber;
                             numerator += classNumber * kernel;
                             denominator += kernel;
                         }
@@ -179,7 +179,7 @@ namespace Isat.Lab1.Services
             double step,
             ReductionType reductionType)
         {
-
+            throw new NotImplementedException();
         }
 
         public static List<FMeasureFromWidthOrCount> FindFMeasureFromNeighborsCount(
@@ -189,7 +189,7 @@ namespace Isat.Lab1.Services
             int step,
             ReductionType reductionType)
         {
-
+            throw new NotImplementedException();
         }
 
         private static double CalculateKernel(double value, KernelFunctionType kernelFunctionType)
@@ -256,7 +256,7 @@ namespace Isat.Lab1.Services
 
         private static double GetAverageNaive(Parameters parameters, int queryEntityIndex)
         {
-            var similarEntities = parameters.Entities.Where(e => 
+            var similarEntities = parameters.Entities.Where(e =>
                 Enumerable.SequenceEqual(e.NormalizedParameters, parameters.Entities[queryEntityIndex].NormalizedParameters)).ToList();
             if (similarEntities.Any())
             {

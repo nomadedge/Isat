@@ -128,11 +128,11 @@ namespace Isat.Lab1
 
         private void SortDistances()
         {
-            foreach (var distancesForEachElement in DistancesForEachType)
+            for (int i = 0; i < DistancesForEachType.Count; i++)
             {
-                foreach (var distancesForElement in distancesForEachElement)
+                for (int j = 0; j < DistancesForEachType[i].Count; j++)
                 {
-                    distancesForElement.OrderBy(d => d.Value);
+                    DistancesForEachType[i][j] = DistancesForEachType[i][j].OrderBy(d => d.Value).ToList();
                 }
             }
         }
@@ -179,7 +179,7 @@ namespace Isat.Lab1
                         var parameters = new Parameters(
                             Entities,
                             DistancesForEachType[Convert.ToInt32(distanceFunctionType)],
-                            windowType, kernelFunctionType, windowWidth, neighborsCount);
+                            distanceFunctionType, windowType, kernelFunctionType, windowWidth, neighborsCount);
 
                         var naiveFMeasure = LeaveOneOutService.CalculateFMeasureNaive(parameters);
                         NaiveFMeasures.Add(new FMeasureFromEnums(parameters, naiveFMeasure));
@@ -247,9 +247,18 @@ namespace Isat.Lab1
             NaiveBestFMeasure = NaiveFMeasures.Aggregate((max, next) => max.Value > next.Value ? max : next);
             OneHotBestFMeasure = OneHotFMeasures.Aggregate((max, next) => max.Value > next.Value ? max : next);
 
-            FindDependencies();
-            
+            //FindDependencies();
 
+            foreach (var fMeasure in NaiveFMeasures)
+            {
+                Console.WriteLine($"{fMeasure.Parameters.WindowType}; {fMeasure.Parameters.DistanceFunctionType}; {fMeasure.Parameters.KernelFunctionType}; {fMeasure.Value}");
+            }
+            Console.WriteLine($">>>>>NAIVE BEST: {NaiveBestFMeasure.Parameters.WindowType}; {NaiveBestFMeasure.Parameters.DistanceFunctionType}; {NaiveBestFMeasure.Parameters.KernelFunctionType}; {NaiveBestFMeasure.Value}");
+            foreach (var fMeasure in OneHotFMeasures)
+            {
+                Console.WriteLine($"{fMeasure.Parameters.WindowType}; {fMeasure.Parameters.DistanceFunctionType}; {fMeasure.Parameters.KernelFunctionType}; {fMeasure.Value}");
+            }
+            Console.WriteLine($">>>>>ONEHOT BEST: {OneHotBestFMeasure.Parameters.WindowType}; {OneHotBestFMeasure.Parameters.DistanceFunctionType}; {OneHotBestFMeasure.Parameters.KernelFunctionType}; {OneHotBestFMeasure.Value}");
         }
 
         public override string ToString()

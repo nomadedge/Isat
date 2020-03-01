@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Isat.Lab1
+﻿namespace Isat.Lab1
 {
     class Program
     {
@@ -9,7 +7,8 @@ namespace Isat.Lab1
         static void Main(string[] args)
         {
             var solution = new Solution(DatasetFileName);
-            Console.WriteLine(solution);
+
+            solution.Solve(5d, 50);
         }
     }
 }
