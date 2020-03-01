@@ -46,7 +46,11 @@ namespace Isat.Lab1.Services
             recallW /= all;
             microF /= all;
 
-            var macroF = 2 * precisionW * recallW / (precisionW + recallW);
+            var macroF = 0d;
+            if (precisionW + recallW != 0)
+            {
+                macroF = 2 * precisionW * recallW / (precisionW + recallW);
+            }
 
             var fMeasure = (macroF + microF) / 2;
             return fMeasure;
@@ -54,6 +58,10 @@ namespace Isat.Lab1.Services
 
         private static double Precision(int T, int P)
         {
+            if (P == 0)
+            {
+                return 0;
+            }
             return Convert.ToDouble(T) / Convert.ToDouble(P);
         }
 
@@ -70,11 +78,19 @@ namespace Isat.Lab1.Services
             }
             var precision = Precision(T, P);
             var recall = Recall(T, C);
+            if (precision + recall == 0)
+            {
+                return 0;
+            }
             return 2 * precision * recall / (precision + recall);
         }
 
         static double PrecisionW(int T, int C, int P)
         {
+            if (P == 0)
+            {
+                return 0;
+            }
             return Convert.ToDouble(T) * Convert.ToDouble(C) / Convert.ToDouble(P);
         }
     }

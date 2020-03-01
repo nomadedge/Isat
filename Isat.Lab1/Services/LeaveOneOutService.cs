@@ -59,7 +59,7 @@ namespace Isat.Lab1.Services
                 {
                     var numerator = 0d;
                     var denominator = 0d;
-                    for (int j = 0; j < parameters.Entities.Count; j++)
+                    for (int j = 0; j < parameters.Entities.Count - 1; j++)
                     {
                         var kernel = CalculateKernel(
                             parameters.DistancesForEachElement[i][j].Value / parameters.WindowWidth, parameters.KernelFunctionType);
@@ -77,7 +77,6 @@ namespace Isat.Lab1.Services
                         queryEntityClassNumber = numerator / denominator;
                     }
                 }
-
                 //Add prediction to confusion matrix
                 confusionMatrix[parameters.Entities[i].ClassNumber][Convert.ToInt32(Math.Round(queryEntityClassNumber))] += 1;
             }
@@ -143,7 +142,7 @@ namespace Isat.Lab1.Services
                     var denominator = 0d;
                     for (int j = 0; j < classesCount; j++)
                     {
-                        for (int k = 0; k < parameters.Entities.Count; k++)
+                        for (int k = 0; k < parameters.Entities.Count - 1; k++)
                         {
                             var kernel = CalculateKernel(
                             parameters.DistancesForEachElement[i][k].Value / parameters.WindowWidth, parameters.KernelFunctionType);
@@ -181,7 +180,7 @@ namespace Isat.Lab1.Services
         {
             var dependency = new List<FMeasureFromWidthOrCount>();
             var currentWindowWidth = minWindowWidth;
-            while (currentWindowWidth < maxWindowWidth)
+            while (currentWindowWidth <= maxWindowWidth)
             {
                 parameters.WindowWidth = currentWindowWidth;
                 switch (reductionType)
@@ -217,7 +216,7 @@ namespace Isat.Lab1.Services
         {
             var dependency = new List<FMeasureFromWidthOrCount>();
             var currentNeighborsCount = minNeiborsCount;
-            while (currentNeighborsCount < maxNeighborsCount)
+            while (currentNeighborsCount <= maxNeighborsCount)
             {
                 parameters.NeighborsCount = currentNeighborsCount;
                 switch (reductionType)
@@ -309,7 +308,8 @@ namespace Isat.Lab1.Services
         private static double GetAverageNaive(Parameters parameters, int queryEntityIndex)
         {
             var similarEntities = parameters.Entities.Where(e =>
-                Enumerable.SequenceEqual(e.NormalizedParameters, parameters.Entities[queryEntityIndex].NormalizedParameters)).ToList();
+                Enumerable.SequenceEqual(e.NormalizedParameters, parameters.Entities[queryEntityIndex].NormalizedParameters)
+                && parameters.Entities.IndexOf(e) != queryEntityIndex).ToList();
             if (similarEntities.Any())
             {
                 return similarEntities.Average(e => e.ClassNumber);
@@ -323,7 +323,8 @@ namespace Isat.Lab1.Services
         private static double GetAverageOneHot(Parameters parameters, int queryEntityIndex, int classIndex)
         {
             var similarEntities = parameters.Entities.Where(e =>
-                Enumerable.SequenceEqual(e.NormalizedParameters, parameters.Entities[queryEntityIndex].NormalizedParameters)).ToList();
+                Enumerable.SequenceEqual(e.NormalizedParameters, parameters.Entities[queryEntityIndex].NormalizedParameters)
+                && parameters.Entities.IndexOf(e) != queryEntityIndex).ToList();
             if (similarEntities.Any())
             {
                 return similarEntities.Average(e => e.Classes[classIndex]);

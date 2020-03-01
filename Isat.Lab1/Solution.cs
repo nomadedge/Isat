@@ -109,13 +109,9 @@ namespace Isat.Lab1
                     {
                         if (j < i)
                         {
-                            distancesForElement.Add(new Distance(distancesForEachElement[j][i].Value, j));
+                            distancesForElement.Add(new Distance(distancesForEachElement[j][i - 1].Value, j));
                         }
-                        //else if (j == i)
-                        //{
-                        //    distancesRow.Add(new Distance(0, i, j));
-                        //}
-                        else
+                        else if (j != i)
                         {
                             distancesForElement.Add(new Distance(CalculateDistance(Entities[i], Entities[j], distanceFunctionType), j));
                         }
@@ -168,7 +164,7 @@ namespace Isat.Lab1
             return distance;
         }
 
-        private void IterateThroughTypes(double windowWidth, int neighborsCount)
+        private void IterateThroughTypes(List<double> windowWidths, int neighborsCount)
         {
             foreach (WindowType windowType in Enum.GetValues(typeof(WindowType)))
             {
@@ -179,7 +175,11 @@ namespace Isat.Lab1
                         var parameters = new Parameters(
                             Entities,
                             DistancesForEachType[Convert.ToInt32(distanceFunctionType)],
-                            distanceFunctionType, windowType, kernelFunctionType, windowWidth, neighborsCount);
+                            distanceFunctionType,
+                            windowType,
+                            kernelFunctionType,
+                            windowWidths[Convert.ToInt32(distanceFunctionType)],
+                            neighborsCount);
 
                         var naiveFMeasure = LeaveOneOutService.CalculateFMeasureNaive(parameters);
                         NaiveFMeasures.Add(new FMeasureFromEnums(parameters, naiveFMeasure));
@@ -193,23 +193,69 @@ namespace Isat.Lab1
 
         private void FindDependencies()
         {
+            var minWidth = 0d;
+            var maxWidth = 0d;
+            var step = 0d;
+
+            switch (NaiveBestFMeasure.Parameters.DistanceFunctionType)
+            {
+                case DistanceFunctionType.Manhattan:
+                    minWidth = 15;
+                    maxWidth = 100;
+                    step = 1;
+                    break;
+                case DistanceFunctionType.Euclidean:
+                    minWidth = 3;
+                    maxWidth = 20;
+                    step = 0.25;
+                    break;
+                case DistanceFunctionType.Chebyshev:
+                    minWidth = 0.2;
+                    maxWidth = 6;
+                    step = 0.1;
+                    break;
+                default:
+                    break;
+            }
+
             switch (NaiveBestFMeasure.Parameters.WindowType)
             {
                 case WindowType.Fixed:
                     NaiveFMeasureDependency = LeaveOneOutService.FindFMeasureFromWindowWidth(
                         NaiveBestFMeasure.Parameters,
-                        0,
-                        40,
-                        0.5,
+                        minWidth,
+                        maxWidth,
+                        step,
                         ReductionType.Naive);
                     break;
                 case WindowType.Variable:
                     NaiveFMeasureDependency = LeaveOneOutService.FindFMeasureFromNeighborsCount(
                         NaiveBestFMeasure.Parameters,
                         1,
-                        Entities.Count,
+                        Entities.Count - 2,
                         1,
                         ReductionType.Naive);
+                    break;
+                default:
+                    break;
+            }
+
+            switch (OneHotBestFMeasure.Parameters.DistanceFunctionType)
+            {
+                case DistanceFunctionType.Manhattan:
+                    minWidth = 15;
+                    maxWidth = 100;
+                    step = 1;
+                    break;
+                case DistanceFunctionType.Euclidean:
+                    minWidth = 3;
+                    maxWidth = 20;
+                    step = 0.25;
+                    break;
+                case DistanceFunctionType.Chebyshev:
+                    minWidth = 0.2;
+                    maxWidth = 6;
+                    step = 0.1;
                     break;
                 default:
                     break;
@@ -219,17 +265,17 @@ namespace Isat.Lab1
             {
                 case WindowType.Fixed:
                     OneHotFMeasureDependency = LeaveOneOutService.FindFMeasureFromWindowWidth(
-                        NaiveBestFMeasure.Parameters,
-                        0,
-                        40,
-                        0.5,
+                        OneHotBestFMeasure.Parameters,
+                        minWidth,
+                        maxWidth,
+                        step,
                         ReductionType.OneHot);
                     break;
                 case WindowType.Variable:
                     OneHotFMeasureDependency = LeaveOneOutService.FindFMeasureFromNeighborsCount(
-                        NaiveBestFMeasure.Parameters,
+                        OneHotBestFMeasure.Parameters,
                         1,
-                        Entities.Count,
+                        Entities.Count - 2,
                         1,
                         ReductionType.OneHot);
                     break;
@@ -239,10 +285,10 @@ namespace Isat.Lab1
         }
 
         public void Solve(
-            double windowWidth,
+            List<double> windowWidths,
             int neighborsCount)
         {
-            IterateThroughTypes(windowWidth, neighborsCount);
+            IterateThroughTypes(windowWidths, neighborsCount);
 
             NaiveBestFMeasure = NaiveFMeasures.Aggregate((max, next) => max.Value > next.Value ? max : next);
             OneHotBestFMeasure = OneHotFMeasures.Aggregate((max, next) => max.Value > next.Value ? max : next);
@@ -260,7 +306,7 @@ namespace Isat.Lab1
                 Console.WriteLine($"{fMeasure.Parameters.WindowType}; {fMeasure.Parameters.DistanceFunctionType}; {fMeasure.Parameters.KernelFunctionType}; {fMeasure.Value}");
             }
             Console.WriteLine($">>>>>ONEHOT BEST: {OneHotBestFMeasure.Parameters.WindowType}; {OneHotBestFMeasure.Parameters.DistanceFunctionType}; {OneHotBestFMeasure.Parameters.KernelFunctionType}; {OneHotBestFMeasure.Value}");
-            Console.WriteLine($">>>>>ONEHOT MEAN F MEASURE: {NaiveFMeasures.Average(fm => fm.Value)}");
+            Console.WriteLine($">>>>>ONEHOT MEAN F MEASURE: {OneHotFMeasures.Average(fm => fm.Value)}");
             Console.WriteLine();
 
             Console.WriteLine("------------------------------------");
@@ -271,7 +317,7 @@ namespace Isat.Lab1
                 switch (NaiveBestFMeasure.Parameters.WindowType)
                 {
                     case WindowType.Fixed:
-                        Console.WriteLine($"{fMeasureFromWidthOrCount.WindowWidth}; {fMeasureFromWidthOrCount.Value}");
+                        Console.WriteLine($"{fMeasureFromWidthOrCount.WindowWidth:N2}; {fMeasureFromWidthOrCount.Value}");
                         break;
                     case WindowType.Variable:
                         Console.WriteLine($"{fMeasureFromWidthOrCount.NeighborsCount}; {fMeasureFromWidthOrCount.Value}");
@@ -290,7 +336,7 @@ namespace Isat.Lab1
                 switch (OneHotBestFMeasure.Parameters.WindowType)
                 {
                     case WindowType.Fixed:
-                        Console.WriteLine($"{fMeasureFromWidthOrCount.WindowWidth}; {fMeasureFromWidthOrCount.Value}");
+                        Console.WriteLine($"{fMeasureFromWidthOrCount.WindowWidth:N2}; {fMeasureFromWidthOrCount.Value}");
                         break;
                     case WindowType.Variable:
                         Console.WriteLine($"{fMeasureFromWidthOrCount.NeighborsCount}; {fMeasureFromWidthOrCount.Value}");

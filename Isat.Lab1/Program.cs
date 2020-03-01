@@ -1,4 +1,6 @@
-﻿namespace Isat.Lab1
+﻿using System.Collections.Generic;
+
+namespace Isat.Lab1
 {
     class Program
     {
@@ -8,7 +10,10 @@
         {
             var solution = new Solution(DatasetFileName);
 
-            solution.Solve(5d, 30);
+            //distances for Manhattan, Euclidean, Chebyshev
+            var distances = new List<double> { 30d, 4d, 0.5 };
+
+            solution.Solve(distances, 10);
         }
     }
 }
