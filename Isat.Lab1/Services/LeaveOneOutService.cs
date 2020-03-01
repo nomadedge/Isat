@@ -89,7 +89,87 @@ namespace Isat.Lab1.Services
 
         public static double CalculateFMeasureOneHot(Parameters parameters)
         {
+            //Fill confusion matrix with zero values
+            var classesCount = parameters.Entities[0].Classes.Count;
+            var confusionMatrix = new List<List<int>>(classesCount);
+            for (int i = 0; i < classesCount; i++)
+            {
+                var confusionMatrixRow = new List<int>(classesCount);
+                for (int j = 0; j < classesCount; j++)
+                {
+                    confusionMatrixRow.Add(0);
+                }
+                confusionMatrix.Add(confusionMatrixRow);
+            }
 
+            //Iterate over leave-one-out
+            for (int i = 0; i < parameters.Entities.Count; i++)
+            {
+                var queryEntityClasses = new List<double>();
+                switch (parameters.WindowType)
+                {
+                    case WindowType.Fixed:
+                        for (int j = 0; j < parameters.Entities.Count - 1; j++)
+                        {
+                            if (parameters.DistancesForEachElement[i][j].Value >= parameters.WindowWidth)
+                            {
+                                parameters.NeighborsCount = j;
+                                break;
+                            }
+                            if (j == parameters.Entities.Count - 2)
+                            {
+                                parameters.NeighborsCount = j + 1;
+                                break;
+                            }
+                        }
+                        break;
+                    case WindowType.Variable:
+                        parameters.WindowWidth = parameters.DistancesForEachElement[i][parameters.NeighborsCount].Value;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (parameters.WindowWidth == 0)
+                {
+                    for (int k = 0; k < parameters.Entities.Count; k++)
+                    {
+                        queryEntityClasses.Add(GetAverageOneHot(parameters, i, k));
+                    }
+                }
+                else
+                {
+                    var numerator = 0d;
+                    var denominator = 0d;
+                    for (int j = 0; j < classesCount; j++)
+                    {
+                        for (int k = 0; k < parameters.Entities.Count; k++)
+                        {
+                            var kernel = CalculateKernel(
+                            parameters.DistancesForEachElement[i][j].Value / parameters.WindowWidth, parameters.KernelFunctionType);
+                            var classNumber = parameters.Entities[parameters.DistancesForEachElement[i][j].EntityIndex].ClassNumber;
+                            numerator += classNumber * kernel;
+                            denominator += kernel;
+                        }
+                        if (denominator == 0)
+                        {
+                            queryEntityClasses.Add(GetAverageOneHot(parameters, i, j));
+                        }
+                        else
+                        {
+                            queryEntityClasses.Add(numerator / denominator);
+                        }
+                    }
+                }
+
+                //Add prediction to confusion matrix. If two columns have similar values choose first occurence
+                var predictedClass = queryEntityClasses.IndexOf(queryEntityClasses.Max());
+                confusionMatrix[parameters.Entities[i].ClassNumber][predictedClass] += 1;
+            }
+
+            var fMeasure = FMeasureService.CalculateFMeasure(confusionMatrix);
+
+            return fMeasure;
         }
 
         public static List<FMeasureFromWidthOrCount> FindFMeasureFromWindowWidth(
@@ -188,27 +268,17 @@ namespace Isat.Lab1.Services
             }
         }
 
-        private static List<double> GetAverageOneHot(Parameters parameters, int queryEntityIndex)
+        private static double GetAverageOneHot(Parameters parameters, int queryEntityIndex, int classIndex)
         {
             var similarEntities = parameters.Entities.Where(e =>
                 Enumerable.SequenceEqual(e.NormalizedParameters, parameters.Entities[queryEntityIndex].NormalizedParameters)).ToList();
             if (similarEntities.Any())
             {
-                var result = new List<double>();
-                for (int i = 0; i < parameters.Entities[0].Classes.Count; i++)
-                {
-                    result.Add(similarEntities.Average(e => e.Classes[i]));
-                }
-                return result;
+                return similarEntities.Average(e => e.Classes[classIndex]);
             }
             else
             {
-                var result = new List<double>();
-                for (int i = 0; i < parameters.Entities[0].Classes.Count; i++)
-                {
-                    result.Add(parameters.Entities.Average(e => e.Classes[i]));
-                }
-                return result;
+                return parameters.Entities.Average(e => e.Classes[classIndex]);
             }
         }
     }
