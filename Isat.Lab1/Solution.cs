@@ -176,7 +176,10 @@ namespace Isat.Lab1
                 {
                     foreach (KernelFunctionType kernelFunctionType in Enum.GetValues(typeof(KernelFunctionType)))
                     {
-                        var parameters = new Parameters(DistancesForEachType[Convert.ToInt32(distanceFunctionType)], windowType, kernelFunctionType, windowWidth, neighborsCount);
+                        var parameters = new Parameters(
+                            Entities,
+                            DistancesForEachType[Convert.ToInt32(distanceFunctionType)],
+                            windowType, kernelFunctionType, windowWidth, neighborsCount);
 
                         var naiveFMeasure = LeaveOneOutService.CalculateFMeasureNaive(parameters);
                         NaiveFMeasures.Add(new FMeasureFromEnums(parameters, naiveFMeasure));

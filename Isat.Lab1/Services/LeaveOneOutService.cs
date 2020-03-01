@@ -2,6 +2,7 @@
 using Isat.Lab1.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Isat.Lab1.Services
 {
@@ -9,7 +10,81 @@ namespace Isat.Lab1.Services
     {
         public static double CalculateFMeasureNaive(Parameters parameters)
         {
+            //Fill confusion matrix with zero values
+            var classesCount = parameters.Entities[0].Classes.Count;
+            var confusionMatrix = new List<List<int>>(classesCount);
+            for (int i = 0; i < classesCount; i++)
+            {
+                var confusionMatrixRow = new List<int>(classesCount);
+                for (int j = 0; j < classesCount; j++)
+                {
+                    confusionMatrixRow.Add(0);
+                }
+                confusionMatrix.Add(confusionMatrixRow);
+            }
 
+            //Iterate over leave-one-out
+            for (int i = 0; i < parameters.Entities.Count; i++)
+            {
+                var queryEntityClassNumber = 0d;
+                switch (parameters.WindowType)
+                {
+                    case WindowType.Fixed:
+                        for (int j = 0; j < parameters.Entities.Count - 1; j++)
+                        {
+                            if (parameters.DistancesForEachElement[i][j].Value >= parameters.WindowWidth)
+                            {
+                                parameters.NeighborsCount = j;
+                                break;
+                            }
+                            if (j == parameters.Entities.Count - 2)
+                            {
+                                parameters.NeighborsCount = j + 1;
+                                break;
+                            }
+                        }
+                        break;
+                    case WindowType.Variable:
+                        parameters.WindowWidth = parameters.DistancesForEachElement[i][parameters.NeighborsCount].Value;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (parameters.WindowWidth == 0)
+                {
+                    queryEntityClassNumber = GetAverageNaive(parameters, i);
+                }
+                else
+                {
+                    var numerator = 0d;
+                    var denominator = 0d;
+                    for (int j = 0; j < parameters.Entities.Count; j++)
+                    {
+                        var kernel = CalculateKernel(
+                            parameters.DistancesForEachElement[i][j].Value / parameters.WindowWidth, parameters.KernelFunctionType);
+                        var classNumber = parameters.Entities[parameters.DistancesForEachElement[i][j].EntityIndex].ClassNumber;
+                        numerator += classNumber * kernel;
+                        denominator += kernel;
+                    }
+
+                    if (denominator == 0)
+                    {
+                        queryEntityClassNumber = GetAverageNaive(parameters, i);
+                    }
+                    else
+                    {
+                        queryEntityClassNumber = numerator / denominator;
+                    }
+                }
+
+                //Add prediction to confusion matrix
+                confusionMatrix[parameters.Entities[i].ClassNumber][Convert.ToInt32(Math.Round(queryEntityClassNumber))] += 1;
+            }
+
+            var fMeasure = FMeasureService.CalculateFMeasure(confusionMatrix);
+
+            return fMeasure;
         }
 
         public static double CalculateFMeasureOneHot(Parameters parameters)
@@ -97,6 +172,44 @@ namespace Isat.Lab1.Services
                     break;
             }
             return kernel;
+        }
+
+        private static double GetAverageNaive(Parameters parameters, int queryEntityIndex)
+        {
+            var similarEntities = parameters.Entities.Where(e => 
+                Enumerable.SequenceEqual(e.NormalizedParameters, parameters.Entities[queryEntityIndex].NormalizedParameters)).ToList();
+            if (similarEntities.Any())
+            {
+                return similarEntities.Average(e => e.ClassNumber);
+            }
+            else
+            {
+                return parameters.Entities.Average(e => e.ClassNumber);
+            }
+        }
+
+        private static List<double> GetAverageOneHot(Parameters parameters, int queryEntityIndex)
+        {
+            var similarEntities = parameters.Entities.Where(e =>
+                Enumerable.SequenceEqual(e.NormalizedParameters, parameters.Entities[queryEntityIndex].NormalizedParameters)).ToList();
+            if (similarEntities.Any())
+            {
+                var result = new List<double>();
+                for (int i = 0; i < parameters.Entities[0].Classes.Count; i++)
+                {
+                    result.Add(similarEntities.Average(e => e.Classes[i]));
+                }
+                return result;
+            }
+            else
+            {
+                var result = new List<double>();
+                for (int i = 0; i < parameters.Entities[0].Classes.Count; i++)
+                {
+                    result.Add(parameters.Entities.Average(e => e.Classes[i]));
+                }
+                return result;
+            }
         }
     }
 }
