@@ -316,7 +316,9 @@ namespace Isat.Lab1.Services
             }
             else
             {
-                return parameters.Entities.Average(e => e.ClassNumber);
+                return parameters.Entities.Average(e => e.ClassNumber)
+                    - parameters.Entities[queryEntityIndex].ClassNumber
+                    / parameters.Entities.Count;
             }
         }
 
@@ -331,7 +333,9 @@ namespace Isat.Lab1.Services
             }
             else
             {
-                return parameters.Entities.Average(e => e.Classes[classIndex]);
+                return parameters.Entities.Average(e => e.Classes[classIndex])
+                    - parameters.Entities[queryEntityIndex].Classes[classIndex]
+                    / parameters.Entities.Count;
             }
         }
     }
