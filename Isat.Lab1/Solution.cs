@@ -1,5 +1,6 @@
 ﻿using Isat.Lab1.Enums;
 using Isat.Lab1.Models;
+using Isat.Lab1.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,22 +12,29 @@ namespace Isat.Lab1
     {
         public List<Entity> Entities { get; set; }
         public List<string> ClassNames { get; set; }
-        public DistanceFunctionType BestDistanceFunctionType { get; set; }
-        public KernelFunctionType BestKernelFunctionType { get; set; }
-        public WindowType BestWindowType { get; set; }
-        public double BestWindowWidth { get; set; }
-        public int BestNeighborsCount { get; set; }
         public int ParametersCount => Entities[0].Parameters.Count;
+        public List<FMeasureFromEnums> NaiveFMeasures { get; set; }
+        public List<FMeasureFromEnums> OneHotFMeasures { get; set; }
+        public FMeasureFromEnums NaiveBestFMeasure { get; set; }
+        public FMeasureFromEnums OneHotBestFMeasure { get; set; }
+        public List<FMeasureFromWidthOrCount> NaiveFMeasureDependency { get; set; }
+        public List<FMeasureFromWidthOrCount> OneHotFMeasureDependency { get; set; }
+        public List<List<List<Distance>>> DistancesForEachType { get; set; }
 
         public Solution(string fileName)
         {
             Entities = new List<Entity>();
             ClassNames = new List<string>();
+            NaiveFMeasures = new List<FMeasureFromEnums>();
+            OneHotFMeasures = new List<FMeasureFromEnums>();
+            DistancesForEachType = new List<List<List<Distance>>>();
 
             ReadFromCsv(fileName);
 
             PerformOneHotReduction();
             NormalizeParameters();
+            CalculateDistances();
+            SortDistances();
         }
 
         private void ReadFromCsv(string fileName)
@@ -89,6 +97,46 @@ namespace Isat.Lab1
             }
         }
 
+        private void CalculateDistances()
+        {
+            foreach (DistanceFunctionType distanceFunctionType in Enum.GetValues(typeof(DistanceFunctionType)))
+            {
+                var distancesForEachElement = new List<List<Distance>>();
+                for (int i = 0; i < Entities.Count; i++)
+                {
+                    var distancesForElement = new List<Distance>();
+                    for (int j = 0; j < Entities.Count; j++)
+                    {
+                        if (j < i)
+                        {
+                            distancesForElement.Add(new Distance(distancesForEachElement[j][i].Value, j));
+                        }
+                        //else if (j == i)
+                        //{
+                        //    distancesRow.Add(new Distance(0, i, j));
+                        //}
+                        else
+                        {
+                            distancesForElement.Add(new Distance(CalculateDistance(Entities[i], Entities[j], distanceFunctionType), j));
+                        }
+                    }
+                    distancesForEachElement.Add(distancesForElement);
+                }
+                DistancesForEachType.Add(distancesForEachElement);
+            }
+        }
+
+        private void SortDistances()
+        {
+            foreach (var distancesForEachElement in DistancesForEachType)
+            {
+                foreach (var distancesForElement in distancesForEachElement)
+                {
+                    distancesForElement.OrderBy(d => d.Value);
+                }
+            }
+        }
+
         private double CalculateDistance(Entity entity1, Entity entity2, DistanceFunctionType distanceFunctionType)
         {
             var distance = 0d;
@@ -97,20 +145,20 @@ namespace Isat.Lab1
                 case DistanceFunctionType.Manhattan:
                     for (int i = 0; i < ParametersCount; i++)
                     {
-                        distance += Math.Abs(entity1.Parameters[i] - entity2.Parameters[i]);
+                        distance += Math.Abs(entity1.NormalizedParameters[i] - entity2.NormalizedParameters[i]);
                     }
                     break;
                 case DistanceFunctionType.Euclidean:
                     for (int i = 0; i < ParametersCount; i++)
                     {
-                        distance += Math.Pow(entity1.Parameters[i] - entity2.Parameters[i], 2);
+                        distance += Math.Pow(entity1.NormalizedParameters[i] - entity2.NormalizedParameters[i], 2);
                     }
                     distance = Math.Sqrt(distance);
                     break;
                 case DistanceFunctionType.Chebyshev:
                     for (int i = 0; i < ParametersCount; i++)
                     {
-                        var iDistance = Math.Abs(entity1.Parameters[i] - entity2.Parameters[i]);
+                        var iDistance = Math.Abs(entity1.NormalizedParameters[i] - entity2.NormalizedParameters[i]);
                         distance = iDistance > distance ? iDistance : distance;
                     }
                     break;
@@ -120,66 +168,85 @@ namespace Isat.Lab1
             return distance;
         }
 
-        private double CalculateKernel(double value, KernelFunctionType kernelFunctionType)
+        private void IterateThroughTypes(double windowWidth, int neighborsCount)
         {
-            var kernel = 0d;
-            switch (kernelFunctionType)
+            foreach (WindowType windowType in Enum.GetValues(typeof(WindowType)))
             {
-                case KernelFunctionType.Uniform:
-                    if (Math.Abs(value) < 1)
+                foreach (DistanceFunctionType distanceFunctionType in Enum.GetValues(typeof(DistanceFunctionType)))
+                {
+                    foreach (KernelFunctionType kernelFunctionType in Enum.GetValues(typeof(KernelFunctionType)))
                     {
-                        kernel = 0.5;
+                        var parameters = new Parameters(DistancesForEachType[Convert.ToInt32(distanceFunctionType)], windowType, kernelFunctionType, windowWidth, neighborsCount);
+
+                        var naiveFMeasure = LeaveOneOutService.CalculateFMeasureNaive(parameters);
+                        NaiveFMeasures.Add(new FMeasureFromEnums(parameters, naiveFMeasure));
+
+                        var oneHotFMeasure = LeaveOneOutService.CalculateFMeasureOneHot(parameters);
+                        OneHotFMeasures.Add(new FMeasureFromEnums(parameters, oneHotFMeasure));
                     }
+                }
+            }
+        }
+
+        private void FindDependencies()
+        {
+            switch (NaiveBestFMeasure.Parameters.WindowType)
+            {
+                case WindowType.Fixed:
+                    NaiveFMeasureDependency = LeaveOneOutService.FindFMeasureFromWindowWidth(
+                        NaiveBestFMeasure.Parameters,
+                        0,
+                        40,
+                        0.5,
+                        ReductionType.Naive);
                     break;
-                case KernelFunctionType.Triangular:
-                    if (Math.Abs(value) < 1)
-                    {
-                        kernel = 1d - Math.Abs(value);
-                    }
-                    break;
-                case KernelFunctionType.Epanechnikov:
-                    if (Math.Abs(value) < 1)
-                    {
-                        kernel = 0.75 * (1 - Math.Pow(value, 2));
-                    }
-                    break;
-                case KernelFunctionType.Quartic:
-                    if (Math.Abs(value) < 1)
-                    {
-                        kernel = 15d / 16d * Math.Pow(1 - Math.Pow(value, 2), 2);
-                    }
-                    break;
-                case KernelFunctionType.Triweight:
-                    if (Math.Abs(value) < 1)
-                    {
-                        kernel = 35d / 32d * Math.Pow(1d - Math.Pow(value, 2d), 3d);
-                    }
-                    break;
-                case KernelFunctionType.Tricube:
-                    if (Math.Abs(value) < 1)
-                    {
-                        kernel = 70d / 81d * Math.Pow(1d - Math.Pow(Math.Abs(value), 3d), 3d);
-                    }
-                    break;
-                case KernelFunctionType.Gaussian:
-                    kernel = Math.Exp(-Math.Pow(value, 2d) / 2d) / Math.Sqrt(2d * Math.PI);
-                    break;
-                case KernelFunctionType.Cosine:
-                    if (Math.Abs(value) < 1)
-                    {
-                        kernel = Math.PI * Math.Cos(Math.PI * value / 2d) / 4d;
-                    }
-                    break;
-                case KernelFunctionType.Logistic:
-                    kernel = 1d / (Math.Exp(value) + 2d + Math.Exp(-value));
-                    break;
-                case KernelFunctionType.Sigmoid:
-                    kernel = 2d / (Math.PI * (Math.Exp(value) + Math.Exp(-value)));
+                case WindowType.Variable:
+                    NaiveFMeasureDependency = LeaveOneOutService.FindFMeasureFromNeighborsCount(
+                        NaiveBestFMeasure.Parameters,
+                        1,
+                        Entities.Count,
+                        1,
+                        ReductionType.Naive);
                     break;
                 default:
                     break;
             }
-            return kernel;
+
+            switch (OneHotBestFMeasure.Parameters.WindowType)
+            {
+                case WindowType.Fixed:
+                    OneHotFMeasureDependency = LeaveOneOutService.FindFMeasureFromWindowWidth(
+                        NaiveBestFMeasure.Parameters,
+                        0,
+                        40,
+                        0.5,
+                        ReductionType.OneHot);
+                    break;
+                case WindowType.Variable:
+                    OneHotFMeasureDependency = LeaveOneOutService.FindFMeasureFromNeighborsCount(
+                        NaiveBestFMeasure.Parameters,
+                        1,
+                        Entities.Count,
+                        1,
+                        ReductionType.OneHot);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public void Solve(
+            double windowWidth,
+            int neighborsCount)
+        {
+            IterateThroughTypes(windowWidth, neighborsCount);
+
+            NaiveBestFMeasure = NaiveFMeasures.Aggregate((max, next) => max.Value > next.Value ? max : next);
+            OneHotBestFMeasure = OneHotFMeasures.Aggregate((max, next) => max.Value > next.Value ? max : next);
+
+            FindDependencies();
+            
+
         }
 
         public override string ToString()

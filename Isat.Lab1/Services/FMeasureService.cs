@@ -1,37 +1,10 @@
-﻿using Isat.Lab1.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Isat.Lab1.Services
 {
     public static class FMeasureService
     {
-        private static double Precision(int T, int P)
-        {
-            return Convert.ToDouble(T) / Convert.ToDouble(P);
-        }
-
-        private static double Recall(int T, int C)
-        {
-            return Convert.ToDouble(T) / Convert.ToDouble(C);
-        }
-
-        private static double FMeasure(int T, int C, int P)
-        {
-            if (T == 0)
-            {
-                return 0;
-            }
-            var precision = Precision(T, P);
-            var recall = Recall(T, C);
-            return 2 * precision * recall / (precision + recall);
-        }
-
-        static double PrecisionW(int T, int C, int P)
-        {
-            return Convert.ToDouble(T) * Convert.ToDouble(C) / Convert.ToDouble(P);
-        }
-
         public static double CalculateFMeasure(List<List<int>> confusionMatrix)
         {
             var classesCount = confusionMatrix.Count;
@@ -77,6 +50,32 @@ namespace Isat.Lab1.Services
 
             var fMeasure = (macroF + microF) / 2;
             return fMeasure;
+        }
+
+        private static double Precision(int T, int P)
+        {
+            return Convert.ToDouble(T) / Convert.ToDouble(P);
+        }
+
+        private static double Recall(int T, int C)
+        {
+            return Convert.ToDouble(T) / Convert.ToDouble(C);
+        }
+
+        private static double FMeasure(int T, int C, int P)
+        {
+            if (T == 0)
+            {
+                return 0;
+            }
+            var precision = Precision(T, P);
+            var recall = Recall(T, C);
+            return 2 * precision * recall / (precision + recall);
+        }
+
+        static double PrecisionW(int T, int C, int P)
+        {
+            return Convert.ToDouble(T) * Convert.ToDouble(C) / Convert.ToDouble(P);
         }
     }
 }
