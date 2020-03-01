@@ -247,18 +247,59 @@ namespace Isat.Lab1
             NaiveBestFMeasure = NaiveFMeasures.Aggregate((max, next) => max.Value > next.Value ? max : next);
             OneHotBestFMeasure = OneHotFMeasures.Aggregate((max, next) => max.Value > next.Value ? max : next);
 
-            //FindDependencies();
+            FindDependencies();
 
             foreach (var fMeasure in NaiveFMeasures)
             {
                 Console.WriteLine($"{fMeasure.Parameters.WindowType}; {fMeasure.Parameters.DistanceFunctionType}; {fMeasure.Parameters.KernelFunctionType}; {fMeasure.Value}");
             }
             Console.WriteLine($">>>>>NAIVE BEST: {NaiveBestFMeasure.Parameters.WindowType}; {NaiveBestFMeasure.Parameters.DistanceFunctionType}; {NaiveBestFMeasure.Parameters.KernelFunctionType}; {NaiveBestFMeasure.Value}");
+            Console.WriteLine($">>>>>NAIVE MEAN F MEASURE: {NaiveFMeasures.Average(fm => fm.Value)}");
             foreach (var fMeasure in OneHotFMeasures)
             {
                 Console.WriteLine($"{fMeasure.Parameters.WindowType}; {fMeasure.Parameters.DistanceFunctionType}; {fMeasure.Parameters.KernelFunctionType}; {fMeasure.Value}");
             }
             Console.WriteLine($">>>>>ONEHOT BEST: {OneHotBestFMeasure.Parameters.WindowType}; {OneHotBestFMeasure.Parameters.DistanceFunctionType}; {OneHotBestFMeasure.Parameters.KernelFunctionType}; {OneHotBestFMeasure.Value}");
+            Console.WriteLine($">>>>>ONEHOT MEAN F MEASURE: {NaiveFMeasures.Average(fm => fm.Value)}");
+            Console.WriteLine();
+
+            Console.WriteLine("------------------------------------");
+            Console.WriteLine("Naive dependency");
+            Console.WriteLine("------------------------------------");
+            foreach (var fMeasureFromWidthOrCount in NaiveFMeasureDependency)
+            {
+                switch (NaiveBestFMeasure.Parameters.WindowType)
+                {
+                    case WindowType.Fixed:
+                        Console.WriteLine($"{fMeasureFromWidthOrCount.WindowWidth}; {fMeasureFromWidthOrCount.Value}");
+                        break;
+                    case WindowType.Variable:
+                        Console.WriteLine($"{fMeasureFromWidthOrCount.NeighborsCount}; {fMeasureFromWidthOrCount.Value}");
+                        break;
+                    default:
+                        break;
+                }
+            }
+            Console.WriteLine();
+
+            Console.WriteLine("------------------------------------");
+            Console.WriteLine("One Hot dependency");
+            Console.WriteLine("------------------------------------");
+            foreach (var fMeasureFromWidthOrCount in OneHotFMeasureDependency)
+            {
+                switch (OneHotBestFMeasure.Parameters.WindowType)
+                {
+                    case WindowType.Fixed:
+                        Console.WriteLine($"{fMeasureFromWidthOrCount.WindowWidth}; {fMeasureFromWidthOrCount.Value}");
+                        break;
+                    case WindowType.Variable:
+                        Console.WriteLine($"{fMeasureFromWidthOrCount.NeighborsCount}; {fMeasureFromWidthOrCount.Value}");
+                        break;
+                    default:
+                        break;
+                }
+            }
+            Console.WriteLine();
         }
 
         public override string ToString()

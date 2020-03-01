@@ -147,8 +147,8 @@ namespace Isat.Lab1.Services
                         {
                             var kernel = CalculateKernel(
                             parameters.DistancesForEachElement[i][k].Value / parameters.WindowWidth, parameters.KernelFunctionType);
-                            var classNumber = parameters.Entities[parameters.DistancesForEachElement[i][k].EntityIndex].ClassNumber;
-                            numerator += classNumber * kernel;
+                            var classColumn = parameters.Entities[parameters.DistancesForEachElement[i][k].EntityIndex].Classes[j];
+                            numerator += classColumn * kernel;
                             denominator += kernel;
                         }
                         if (denominator == 0)
@@ -179,7 +179,33 @@ namespace Isat.Lab1.Services
             double step,
             ReductionType reductionType)
         {
-            throw new NotImplementedException();
+            var dependency = new List<FMeasureFromWidthOrCount>();
+            var currentWindowWidth = minWindowWidth;
+            while (currentWindowWidth < maxWindowWidth)
+            {
+                parameters.WindowWidth = currentWindowWidth;
+                switch (reductionType)
+                {
+                    case ReductionType.Naive:
+                        dependency.Add(new FMeasureFromWidthOrCount
+                        {
+                            Value = CalculateFMeasureNaive(parameters),
+                            WindowWidth = currentWindowWidth
+                        });
+                        break;
+                    case ReductionType.OneHot:
+                        dependency.Add(new FMeasureFromWidthOrCount
+                        {
+                            Value = CalculateFMeasureOneHot(parameters),
+                            WindowWidth = currentWindowWidth
+                        });
+                        break;
+                    default:
+                        break;
+                }
+                currentWindowWidth += step;
+            }
+            return dependency;
         }
 
         public static List<FMeasureFromWidthOrCount> FindFMeasureFromNeighborsCount(
@@ -189,7 +215,33 @@ namespace Isat.Lab1.Services
             int step,
             ReductionType reductionType)
         {
-            throw new NotImplementedException();
+            var dependency = new List<FMeasureFromWidthOrCount>();
+            var currentNeighborsCount = minNeiborsCount;
+            while (currentNeighborsCount < maxNeighborsCount)
+            {
+                parameters.NeighborsCount = currentNeighborsCount;
+                switch (reductionType)
+                {
+                    case ReductionType.Naive:
+                        dependency.Add(new FMeasureFromWidthOrCount
+                        {
+                            Value = CalculateFMeasureNaive(parameters),
+                            NeighborsCount = currentNeighborsCount
+                        });
+                        break;
+                    case ReductionType.OneHot:
+                        dependency.Add(new FMeasureFromWidthOrCount
+                        {
+                            Value = CalculateFMeasureOneHot(parameters),
+                            NeighborsCount = currentNeighborsCount
+                        });
+                        break;
+                    default:
+                        break;
+                }
+                currentNeighborsCount += step;
+            }
+            return dependency;
         }
 
         private static double CalculateKernel(double value, KernelFunctionType kernelFunctionType)

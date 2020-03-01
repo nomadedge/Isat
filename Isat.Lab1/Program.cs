@@ -8,7 +8,7 @@
         {
             var solution = new Solution(DatasetFileName);
 
-            solution.Solve(5d, 50);
+            solution.Solve(5d, 30);
         }
     }
 }
