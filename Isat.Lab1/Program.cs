@@ -11,7 +11,7 @@ namespace Isat.Lab1
             var solution = new Solution(DatasetFileName);
 
             //distances for Manhattan, Euclidean, Chebyshev
-            var distances = new List<double> { 30d, 4d, 0.5 };
+            var distances = new List<double> { 30d, 4d, 3d };
 
             solution.Solve(distances, 10);
         }
