@@ -12,7 +12,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Isat.TaskC", "Isat.TaskC\Is
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Isat.Lab1", "Isat.Lab1\Isat.Lab1.csproj", "{E8377695-1CB8-433F-ADDC-B43D24941406}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Isat.TaskD", "Isat.TaskD\Isat.TaskD.csproj", "{3A13277F-53A6-429D-A1FA-81DDDE68916A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Isat.TaskD", "Isat.TaskD\Isat.TaskD.csproj", "{3A13277F-53A6-429D-A1FA-81DDDE68916A}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Isat.Lab2", "Isat.Lab2\Isat.Lab2.pyproj", "{1AD49853-9F2E-4F39-8E10-EF5D1B9D5A9B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,6 +44,8 @@ Global
 		{3A13277F-53A6-429D-A1FA-81DDDE68916A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A13277F-53A6-429D-A1FA-81DDDE68916A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A13277F-53A6-429D-A1FA-81DDDE68916A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AD49853-9F2E-4F39-8E10-EF5D1B9D5A9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AD49853-9F2E-4F39-8E10-EF5D1B9D5A9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
