@@ -1,28 +1,22 @@
 import numpy
 from sklearn.linear_model import SGDRegressor, Ridge, LinearRegression, RANSACRegressor
 from sklearn import preprocessing
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as pyplot
 
-#def smape(A, F):
-#    return 100/len(A) * numpy.sum(2 * numpy.abs(F - A) / (numpy.abs(A) + numpy.abs(F)))
+def smape(A, F):
+    return 100/len(A) * numpy.sum(2 * numpy.abs(F - A) / (numpy.abs(A) + numpy.abs(F)))
 
-#def _error(actual: numpy.ndarray, predicted: numpy.ndarray):
-#    return actual - predicted
+def _error(actual: numpy.ndarray, predicted: numpy.ndarray):
+    return actual - predicted
 
-#def mse(actual: numpy.ndarray, predicted: numpy.ndarray):
-#    return numpy.mean(numpy.square(_error(actual, predicted)))
+def mse(actual: numpy.ndarray, predicted: numpy.ndarray):
+    return numpy.mean(numpy.square(_error(actual, predicted)))
 
-#def rmse(actual: numpy.ndarray, predicted: numpy.ndarray):
-#    return numpy.sqrt(mse(actual, predicted))
+def rmse(actual: numpy.ndarray, predicted: numpy.ndarray):
+    return numpy.sqrt(mse(actual, predicted))
 
-#def nrmse(actual: numpy.ndarray, predicted: numpy.ndarray):
-#    return rmse(actual, predicted) / (actual.max() - actual.min())
-
-def rmse(y_pred, y_actual):
-    return (sum([(y_pred_i - y_actual_i)**2 for y_pred_i, y_actual_i in zip(y_pred, y_actual)])/len(y_actual))**(1/2)
-
-def nrmse(y_pred, y_actual):
-    return rmse(y_pred, y_actual)/(max(y_actual) - min(y_actual))
+def nrmse(actual: numpy.ndarray, predicted: numpy.ndarray):
+    return rmse(actual, predicted) / (actual.max() - actual.min())
 
 #read from file and normalize
 
@@ -66,19 +60,48 @@ xTest = numpy.hstack((xTest, numpy.ones((xTest.shape[0], 1))))
 
 modelRidge = Ridge(alpha=0.5, solver='svd')
 modelRidge.fit(xTraining, yTraining)
-yPredictedTrain = modelRidge.predict(xTraining)
-errorTrain = nrmse(yPredictedTrain, yTraining)
-print(errorTrain)
-yPredictedTest = modelRidge.predict(xTest)
-errorTest = nrmse(yPredictedTest, yTest)
+yPredictedRidge = modelRidge.predict(xTest)
+errorTest = nrmse(yPredictedRidge, yTest)
 print(errorTest)
 
 #sgd
 
-#sgdRegressor = SGDRegressor(shuffle=True, max_iter=1000000, tol=1e-20, penalty="elasticnet", alpha=0.1, learning_rate="optimal", l1_ratio=0.4, n_iter_no_change=100)
-#sgdModel = sgdRegressor.fit(xTraining, yTraining)
-#yPredicted = sgdModel.predict(xTest)
-#sgdNrmse = nrmse(numpy.asarray(yTest, dtype=numpy.int64), numpy.asarray(yPredicted, dtype=numpy.int64))
-#sgdSmape = smape(numpy.asarray(yTest, dtype=numpy.int64), numpy.asarray(yPredicted, dtype=numpy.int64))
-#print(sgdNrmse)
-#print(sgdSmape)
+#sgdIterations, sgdError = [], []
+
+for i in range(10, 501, 10):
+    modelSgd = SGDRegressor(shuffle=True, max_iter=i, penalty="elasticnet", alpha=0.01, learning_rate="invscaling", eta0=0.001, l1_ratio=0.6, power_t=0.3)
+    modelSgd.fit(xTraining, yTraining)
+    yPredictedSgd = modelSgd.predict(xTest)
+    sgdIterations.append(i)
+    sgdNrmse = nrmse(yPredictedSgd, yTest)
+    sgdError.append(sgdNrmse)
+    print(i)
+    print(sgdNrmse)
+    print()
+
+pyplot.plot(sgdIterations, sgdError, label="NRMSE - iterations count dependency")
+pyplot.xlabel("Iterations count")
+pyplot.ylabel("NRMSE")
+pyplot.legend()
+pyplot.show()
+
+#ransac
+
+ransacIterations, ransacError = [], []
+
+for i in range(1, 11, 1):
+    modelRansac = RANSACRegressor(max_trials=i, max_skips=100)
+    modelRansac.fit(xTraining, yTraining)
+    yPredictedRansac = modelRansac.predict(xTest)
+    ransacIterations.append(i)
+    ransacNrmse = nrmse(yPredictedRansac, yTest)
+    ransacError.append(ransacNrmse)
+    print(i)
+    print(ransacNrmse)
+    print()
+
+pyplot.plot(ransacIterations, ransacError, label="NRMSE - Trials count dependency")
+pyplot.xlabel("Trials count")
+pyplot.ylabel("NRMSE")
+pyplot.legend()
+pyplot.show()
