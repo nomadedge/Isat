@@ -1,5 +1,5 @@
 import numpy
-from sklearn.linear_model import SGDRegressor, Ridge, LinearRegression, RANSACRegressor
+from sklearn.linear_model import SGDRegressor, Ridge, RANSACRegressor
 from sklearn import preprocessing
 import matplotlib.pyplot as pyplot
 
