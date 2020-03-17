@@ -58,72 +58,72 @@ xTest = numpy.hstack((xTest, numpy.ones((xTest.shape[0], 1))))
 
 #mnk with svd
 
-#modelRidge = Ridge(alpha=0.5, solver='svd')
-#modelRidge.fit(xTraining, yTraining)
+modelRidge = Ridge(alpha=0.5, solver='svd')
+modelRidge.fit(xTraining, yTraining)
 
-#yPredictedRidgeTraining = modelRidge.predict(xTraining)
-#yPredictedRidgeTest = modelRidge.predict(xTest)
+yPredictedRidgeTraining = modelRidge.predict(xTraining)
+yPredictedRidgeTest = modelRidge.predict(xTest)
 
-#errorTraining = nrmse(yPredictedRidgeTraining, yTraining)
-#errorTest = nrmse(yPredictedRidgeTest, yTest)
+errorTraining = nrmse(yPredictedRidgeTraining, yTraining)
+errorTest = nrmse(yPredictedRidgeTest, yTest)
 
-#print("Training NRMSE: " + str(errorTraining))
-#print("Test NRMSE: " + str(errorTest))
+print("Training NRMSE: " + str(errorTraining))
+print("Test NRMSE: " + str(errorTest))
 
 #sgd
 
-#sgdIterations, sgdErrorTraining, sgdErrorTest = [], [], []
+sgdIterations, sgdErrorTraining, sgdErrorTest = [], [], []
 
-#for i in range(10, 501, 10):
-#    modelSgd = SGDRegressor(shuffle=True, max_iter=i, penalty="elasticnet", alpha=0.01, learning_rate="invscaling", eta0=0.001, l1_ratio=0.6, power_t=0.3)
-#    modelSgd.fit(xTraining, yTraining)
+for i in range(10, 501, 10):
+    modelSgd = SGDRegressor(shuffle=True, max_iter=i, penalty="elasticnet", alpha=0.01, learning_rate="invscaling", eta0=0.001, l1_ratio=0.6, power_t=0.3)
+    modelSgd.fit(xTraining, yTraining)
 
-#    yPredictedSgdTrainig = modelSgd.predict(xTraining)
-#    yPredictedSgdTest = modelSgd.predict(xTest)
+    yPredictedSgdTrainig = modelSgd.predict(xTraining)
+    yPredictedSgdTest = modelSgd.predict(xTest)
 
-#    sgdIterations.append(i)
+    sgdIterations.append(i)
 
-#    sgdNrmseTraining = nrmse(yPredictedSgdTrainig, yTraining)
-#    sgdNrmseTest = nrmse(yPredictedSgdTest, yTest)
+    sgdNrmseTraining = nrmse(yPredictedSgdTrainig, yTraining)
+    sgdNrmseTest = nrmse(yPredictedSgdTest, yTest)
 
-#    sgdErrorTraining.append(sgdNrmseTraining)
-#    sgdErrorTest.append(sgdNrmseTest)
+    sgdErrorTraining.append(sgdNrmseTraining)
+    sgdErrorTest.append(sgdNrmseTest)
 
-#    print(i)
-#    print()
+    print(i)
+    print()
 
-#pyplot.plot(sgdIterations, sgdErrorTraining, label="Training: NRMSE - iterations count dependency")
-#pyplot.plot(sgdIterations, sgdErrorTest, label="Test: NRMSE - iterations count dependency")
-#pyplot.xlabel("Iterations count")
-#pyplot.ylabel("NRMSE")
-#pyplot.legend()
-#pyplot.show()
+pyplot.plot(sgdIterations, sgdErrorTraining, label="Training: NRMSE - iterations count dependency")
+pyplot.plot(sgdIterations, sgdErrorTest, label="Test: NRMSE - iterations count dependency")
+pyplot.xlabel("Iterations count")
+pyplot.ylabel("NRMSE")
+pyplot.legend()
+pyplot.show()
 
 #ransac
 
-#ransacIterations, ransacErrorTraining, ransacErrorTest = [], [], []
+ransacIterations, ransacErrorTraining, ransacErrorTest = [], [], []
 
-#for i in range(1, 11, 1):
-#    modelRansac = RANSACRegressor(max_trials=i, max_skips=100)
-#    modelRansac.fit(xTraining, yTraining)
+for i in range(1, 11, 1):
+    modelRansac = RANSACRegressor(max_trials=i, max_skips=100)
+    modelRansac.fit(xTraining, yTraining)
 
-#    yPredictedRansacTraining = modelRansac.predict(xTraining)
-#    yPredictedRansacTest = modelRansac.predict(xTest)
+    yPredictedRansacTraining = modelRansac.predict(xTraining)
+    yPredictedRansacTest = modelRansac.predict(xTest)
 
-#    ransacIterations.append(i)
+    ransacIterations.append(i)
 
-#    ransacNrmseTraining = nrmse(yPredictedRansacTraining, yTraining)
-#    ransacNrmseTest = nrmse(yPredictedRansacTest, yTest)
+    ransacNrmseTraining = nrmse(yPredictedRansacTraining, yTraining)
+    ransacNrmseTest = nrmse(yPredictedRansacTest, yTest)
 
-#    ransacErrorTraining.append(ransacNrmseTraining)
-#    ransacErrorTest.append(ransacNrmseTest)
+    ransacErrorTraining.append(ransacNrmseTraining)
+    ransacErrorTest.append(ransacNrmseTest)
 
-#    print(i)
-#    print()
+    print(i)
+    print()
 
-#pyplot.plot(ransacIterations, ransacErrorTraining, label="Training: NRMSE - Trials count dependency")
-#pyplot.plot(ransacIterations, ransacErrorTest, label="Test: NRMSE - Trials count dependency")
-#pyplot.xlabel("Trials count")
-#pyplot.ylabel("NRMSE")
-#pyplot.legend()
-#pyplot.show()
+pyplot.plot(ransacIterations, ransacErrorTraining, label="Training: NRMSE - Trials count dependency")
+pyplot.plot(ransacIterations, ransacErrorTest, label="Test: NRMSE - Trials count dependency")
+pyplot.xlabel("Trials count")
+pyplot.ylabel("NRMSE")
+pyplot.legend()
+pyplot.show()
