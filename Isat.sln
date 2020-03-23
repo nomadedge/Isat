@@ -18,6 +18,8 @@ Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Isat.Lab2", "Isat.Lab2\Isat
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Isat.Lab3", "Isat.Lab3\Isat.Lab3.pyproj", "{1E055094-F360-4FB2-B00F-F8C7663A7B15}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Isat.Lab4", "Isat.Lab4\Isat.Lab4.pyproj", "{08D09AB5-0C56-4CB9-BD51-B90DA00B3064}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +52,8 @@ Global
 		{1AD49853-9F2E-4F39-8E10-EF5D1B9D5A9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1E055094-F360-4FB2-B00F-F8C7663A7B15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1E055094-F360-4FB2-B00F-F8C7663A7B15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08D09AB5-0C56-4CB9-BD51-B90DA00B3064}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08D09AB5-0C56-4CB9-BD51-B90DA00B3064}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
