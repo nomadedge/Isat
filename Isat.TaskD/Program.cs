@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Isat.TaskD
 {
@@ -16,12 +17,25 @@ namespace Isat.TaskD
         }
     }
 
+    class Normalization
+    {
+        public double Average { get; set; }
+        public double Rmse { get; set; }
+
+        public Normalization(double average, double rmse)
+        {
+            Average = average;
+            Rmse = rmse;
+        }
+    }
+
     class Solution
     {
         public int EntitiesCount { get; set; }
         public int FeaturesCount { get; set; }
         public List<Entity> Entities { get; set; }
         public List<double> Coefficients { get; set; }
+        public List<Normalization> Normalizations { get; set; }
 
         public Solution(
             int entitiesCount,
@@ -33,6 +47,7 @@ namespace Isat.TaskD
 
             Entities = new List<Entity>(EntitiesCount);
             Coefficients = new List<double>(FeaturesCount + 1);
+            Normalizations = new List<Normalization>(FeaturesCount);
 
             foreach (var entityString in entityStrings)
             {
@@ -49,8 +64,12 @@ namespace Isat.TaskD
             Normalize();
         }
 
-        public void Solve(int epochsCount, double learningRate)
+        public void Solve()
         {
+            var epochsCount = 1900;
+            var learningRate = Entities.Average(e => Math.Abs(e.TargetValue)) / 3000;
+            var batchSize = Math.Min(20, EntitiesCount);
+
             //Coefficients.AddRange(new double[FeaturesCount + 1]);
             var random = new Random();
             for (int i = 0; i < FeaturesCount + 1; i++)
@@ -60,12 +79,14 @@ namespace Isat.TaskD
 
             for (int epochNumber = 1; epochNumber < epochsCount + 1; epochNumber++)
             {
-                var sumError = 0d;
-                foreach (var entity in Entities)
+                var batch = Entities.OrderBy(e => random.NextDouble()).Take(batchSize).ToList();
+
+                //var sumError = 0d;
+                foreach (var entity in batch)
                 {
                     var predictedValue = Predict(entity.NormalizedFeatures);
                     var error = predictedValue - entity.TargetValue;
-                    sumError += Math.Pow(error, 2);
+                    //sumError += Math.Pow(error, 2);
                     for (int i = 0; i < FeaturesCount; i++)
                     {
                         Coefficients[i] -= learningRate * error * entity.NormalizedFeatures[i];
@@ -73,14 +94,16 @@ namespace Isat.TaskD
                     Coefficients[FeaturesCount] -= learningRate * error;
                 }
 
-                Console.WriteLine($"Epoch: {epochNumber}\tError = {sumError}");
-                foreach (var coefficient in Coefficients)
-                {
-                    Console.Write($"{coefficient} ");
-                }
-                Console.WriteLine();
-                Console.WriteLine();
+                //Console.WriteLine($"Epoch: {epochNumber}\tError = {sumError}");
+                //foreach (var coefficient in Coefficients)
+                //{
+                //    Console.Write($"{coefficient} ");
+                //}
+                //Console.WriteLine();
+                //Console.WriteLine();
             }
+
+            Denormalize();
         }
 
         public double Predict(List<double> features)
@@ -116,11 +139,28 @@ namespace Isat.TaskD
                     rmse += Math.Pow(Entities[j].Features[i] - average, 2);
                 }
                 rmse = Math.Sqrt(rmse / Entities.Count);
+
+                Normalizations.Add(new Normalization(average, rmse));
+
                 for (int j = 0; j < Entities.Count; j++)
                 {
                     Entities[j].NormalizedFeatures.Add((Entities[j].Features[i] - average) / rmse);
                 }
             }
+        }
+
+        private void Denormalize()
+        {
+            var sum = 0d;
+
+            for (int i = 0; i < FeaturesCount; i++)
+            {
+                sum += Coefficients[i] * Normalizations[i].Average / Normalizations[i].Rmse;
+
+                Coefficients[i] /= Normalizations[i].Rmse;
+            }
+
+            Coefficients[FeaturesCount] -= sum;
         }
 
         public void Print()
@@ -147,7 +187,7 @@ namespace Isat.TaskD
 
             var solution = new Solution(entitiesCount, featuresCount, entityStrings);
 
-            solution.Solve(1000, 0.01);
+            solution.Solve();
 
             solution.Print();
         }
