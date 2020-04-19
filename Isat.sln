@@ -24,6 +24,10 @@ Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Isat.Lab5", "Isat.Lab5\Isat
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Isat.Lab6", "Isat.Lab6\Isat.Lab6.pyproj", "{7AD5037C-9AC2-42FF-968C-EB6A7FFF10DC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Isat.TaskN", "Isat.TaskN\Isat.TaskN.csproj", "{2AC511E8-E060-4A69-9B91-F5726644BC4C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Isat.TaskM", "Isat.TaskM\Isat.TaskM.csproj", "{FB515046-5690-451F-B591-EE15BBC7712D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +66,14 @@ Global
 		{B83CB5DF-6ECC-4EDA-9862-A581089C6AB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7AD5037C-9AC2-42FF-968C-EB6A7FFF10DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7AD5037C-9AC2-42FF-968C-EB6A7FFF10DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AC511E8-E060-4A69-9B91-F5726644BC4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AC511E8-E060-4A69-9B91-F5726644BC4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AC511E8-E060-4A69-9B91-F5726644BC4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AC511E8-E060-4A69-9B91-F5726644BC4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB515046-5690-451F-B591-EE15BBC7712D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB515046-5690-451F-B591-EE15BBC7712D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB515046-5690-451F-B591-EE15BBC7712D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB515046-5690-451F-B591-EE15BBC7712D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
