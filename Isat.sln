@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Isat.TaskN", "Isat.TaskN\Is
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Isat.TaskM", "Isat.TaskM\Isat.TaskM.csproj", "{FB515046-5690-451F-B591-EE15BBC7712D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Isat.TaskJ", "Isat.TaskJ\Isat.TaskJ.csproj", "{F18FE02D-B282-48C1-ACCE-78BB52AFCCA4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +76,10 @@ Global
 		{FB515046-5690-451F-B591-EE15BBC7712D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB515046-5690-451F-B591-EE15BBC7712D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB515046-5690-451F-B591-EE15BBC7712D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F18FE02D-B282-48C1-ACCE-78BB52AFCCA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F18FE02D-B282-48C1-ACCE-78BB52AFCCA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F18FE02D-B282-48C1-ACCE-78BB52AFCCA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F18FE02D-B282-48C1-ACCE-78BB52AFCCA4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
