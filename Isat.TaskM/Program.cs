@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Isat.TaskM
 {
@@ -11,7 +10,7 @@ namespace Isat.TaskM
         public int EntitiesCount { get; set; }
         public Dictionary<int, int> X1Counts { get; set; }
         public Dictionary<int, int> X2Counts { get; set; }
-        public List<Dictionary<int, int>> PairCounts { get; set; }
+        public Dictionary<int, Dictionary<int, int>> PairCounts { get; set; }
         public double Hi2 { get; set; }
 
         public Solution(int kX1, int kX2, int entitiesCount)
@@ -22,11 +21,7 @@ namespace Isat.TaskM
 
             X1Counts = new Dictionary<int, int>(KX1);
             X2Counts = new Dictionary<int, int>(KX2);
-            PairCounts = new List<Dictionary<int, int>>(KX1);
-            for (int i = 0; i < KX1; i++)
-            {
-                PairCounts.Add(new Dictionary<int, int>());
-            }
+            PairCounts = new Dictionary<int, Dictionary<int, int>>(KX1);
 
             ReadEntities();
         }
@@ -36,9 +31,9 @@ namespace Isat.TaskM
             for (int i = 0; i < EntitiesCount; i++)
             {
                 var values = Console.ReadLine().Split(' ');
-                var x1 = Convert.ToInt32(values[0]) - 1;
-                var x2 = Convert.ToInt32(values[1]) - 1;
-                
+                var x1 = Convert.ToInt32(values[0]);
+                var x2 = Convert.ToInt32(values[1]);
+
                 if (X1Counts.ContainsKey(x1))
                 {
                     X1Counts[x1] += 1;
@@ -57,6 +52,10 @@ namespace Isat.TaskM
                     X2Counts.Add(x2, 1);
                 }
 
+                if (!PairCounts.ContainsKey(x1))
+                {
+                    PairCounts.Add(x1, new Dictionary<int, int>());
+                }
                 if (PairCounts[x1].ContainsKey(x2))
                 {
                     PairCounts[x1][x2] += 1;
@@ -72,12 +71,12 @@ namespace Isat.TaskM
         {
             double hi2 = EntitiesCount;
 
-            for (int i = 0; i < KX1; i++)
+            foreach (var pairCounts in PairCounts)
             {
-                foreach (var pairCount in PairCounts[i])
+                foreach (var pairCount in pairCounts.Value)
                 {
-                    var value = X1Counts[i] * X2Counts[pairCount.Key] / (double)EntitiesCount;
-                    hi2 += Math.Pow(pairCount.Value - value, 2) / value - value;
+                    var value = (double)X1Counts[pairCounts.Key] * (double)X2Counts[pairCount.Key] / (double)EntitiesCount;
+                    hi2 += Math.Pow((double)pairCount.Value - value, 2) / value - value;
                 }
             }
 

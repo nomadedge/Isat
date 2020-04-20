@@ -21,11 +21,6 @@ namespace Isat.TaskK
             Entities = new Dictionary<int, List<int>>(yCount);
             EntitiesOriginal = new List<Tuple<int, int>>();
 
-            for (int i = 1; i < yCount + 1; i++)
-            {
-                Entities.Add(i, new List<int>());
-            }
-
             ReadEntities();
         }
 
@@ -45,13 +40,15 @@ namespace Isat.TaskK
 
             for (int i = 0; i < EntitiesCount; i++)
             {
+                allDistance += EntitiesOriginal[i].Item1 * (2 * i - EntitiesCount + 1);
+                if (!Entities.ContainsKey(EntitiesOriginal[i].Item2))
+                {
+                    Entities.Add(EntitiesOriginal[i].Item2, new List<int>());
+                }
                 Entities[EntitiesOriginal[i].Item2].Add(EntitiesOriginal[i].Item1);
-
-                var difference = 2 * EntitiesCount - 2;
-                allDistance += EntitiesOriginal[i].Item1 * (4 * i - difference);
             }
 
-            AllDistance = Math.Abs(allDistance);
+            AllDistance = Math.Abs(allDistance * 2);
         }
 
         public void Solve()
@@ -60,9 +57,12 @@ namespace Isat.TaskK
 
             for (int i = 1; i < YCount + 1; i++)
             {
-                for (int j = 0; j < Entities[i].Count; j++)
+                if (Entities.ContainsKey(i))
                 {
-                    innerDistance += Entities[i][j] * (2 * j - Entities[i].Count + 1);
+                    for (int j = 0; j < Entities[i].Count; j++)
+                    {
+                        innerDistance += Entities[i][j] * (2 * j - Entities[i].Count + 1);
+                    }
                 }
             }
 
