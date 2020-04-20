@@ -8,8 +8,8 @@ namespace Isat.TaskK
     {
         public int YCount { get; set; }
         public int EntitiesCount { get; set; }
-        public Dictionary<int, List<int>> Entities { get; set; }
-        public List<Tuple<int, int>> EntitiesOriginal { get; set; }
+        public Dictionary<long, List<long>> Entities { get; set; }
+        public List<Tuple<long, long>> EntitiesOriginal { get; set; }
         public long AllDistance { get; set; }
         public long InnerDistance { get; set; }
         public long OuterDistance { get; set; }
@@ -18,8 +18,8 @@ namespace Isat.TaskK
         {
             YCount = yCount;
             EntitiesCount = entitiesCount;
-            Entities = new Dictionary<int, List<int>>(yCount);
-            EntitiesOriginal = new List<Tuple<int, int>>();
+            Entities = new Dictionary<long, List<long>>(yCount);
+            EntitiesOriginal = new List<Tuple<long, long>>();
 
             ReadEntities();
         }
@@ -31,9 +31,9 @@ namespace Isat.TaskK
             for (int i = 0; i < EntitiesCount; i++)
             {
                 var values = Console.ReadLine().Split(' ');
-                var x = Convert.ToInt32(values[0]);
-                var y = Convert.ToInt32(values[1]);
-                EntitiesOriginal.Add(new Tuple<int, int>(x, y));
+                var x = Convert.ToInt64(values[0]);
+                var y = Convert.ToInt64(values[1]);
+                EntitiesOriginal.Add(new Tuple<long, long>(x, y));
             }
 
             EntitiesOriginal = EntitiesOriginal.OrderBy(eo => eo.Item1).ToList();
@@ -43,7 +43,7 @@ namespace Isat.TaskK
                 allDistance += EntitiesOriginal[i].Item1 * (2 * i - EntitiesCount + 1);
                 if (!Entities.ContainsKey(EntitiesOriginal[i].Item2))
                 {
-                    Entities.Add(EntitiesOriginal[i].Item2, new List<int>());
+                    Entities.Add(EntitiesOriginal[i].Item2, new List<long>());
                 }
                 Entities[EntitiesOriginal[i].Item2].Add(EntitiesOriginal[i].Item1);
             }
